@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+require 'thor'
+require_relative 'engine'
+
+class CLI < Thor
+  include Thor::Actions
+  option :token_file
+  option :config_file
+  option :file
+  option :folder
+  def initialize *args
+    super(*args)
+    @engine = Engine.new(token_file: options[:token_file], config_file: options[:config_file])
+  end
+
+  desc "auth", "re-authorize the script"
+  def auth
+    puts "Point browser to following URL:\n\n"
+    puts @engine.authorization_url
+    puts "\n\n"
+    auth_code = ask "paste in the authorization code"
+    @engine.renew_refresh_token auth_code
+  end
+  desc "upload", "uploads the named file to a specified folder"
+  def upload
+  	puts "Starting upload #{options[:file]} to #{options[:folder]}"
+  	@engine.upload options[:file]
+  end
+end
+
+CLI.start(ARGV)
