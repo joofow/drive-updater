@@ -1,5 +1,5 @@
 require './google_authorizer'
-require 'google/apis/drive_v2'
+require 'google/apis/drive_v3'
 
 class Engine
 
@@ -24,10 +24,30 @@ class Engine
     return @authorization
   end
 
-  def upload file
-  	@caller = Google::Apis::DriveV2::DriveService.new
-			@caller.authorization = authorization
-  	metadata = Google::Apis::DriveV2::File.new(title: "test")
-			metadata = @caller.insert_file(metadata, upload_source: file, content_type: 'text/plain')
+  def upload file, folder = nil
+  	@driveservice = Google::Apis::DriveV3::DriveService.new
+			@driveservice.authorization = authorization
+			if folder
+				file_metadata = {
+					name: folder,
+					mime_type: 'application/vnd.google-apps.folder'
+				}
+				response = @driveservice.list_files(q: "mimeType='application/vnd.google-apps.folder'",
+                                      spaces: 'drive',
+                                      fields:'nextPageToken, files(id, name)',
+                                      page_token: nil)
+				folder = if response.files.length > 0
+					response.files.first
+				else
+					@driveservice.create_file(file_metadata, fields: 'id')
+				end
+				file_metadata = {
+					name: File.basename(file),
+					parents: [folder.id]
+				}
+				puts "Folder Id: #{folder.id}"
+			end
+			file_metadata = {name: File.basename(file) } unless file_metadata
+			metadata = @driveservice.create_file(file_metadata, fields: 'id', upload_source: "#{File.basename(file)}", content_type: 'text/plain')
   end
 end

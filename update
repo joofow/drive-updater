@@ -24,7 +24,7 @@ class CLI < Thor
   desc "upload", "uploads the named file to a specified folder"
   def upload
   	puts "Starting upload #{options[:file]} to #{options[:folder]}"
-  	@engine.upload options[:file]
+  	@engine.upload options[:file], options[:folder]
   end
 end
 
