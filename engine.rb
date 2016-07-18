@@ -1,4 +1,4 @@
-require './google_authorizer'
+require_relative 'google_authorizer'
 require 'google/apis/drive_v3'
 
 class Engine
@@ -48,6 +48,6 @@ class Engine
 				puts "Folder Id: #{folder.id}"
 			end
 			file_metadata = {name: File.basename(file) } unless file_metadata
-			metadata = @driveservice.create_file(file_metadata, fields: 'id', upload_source: "#{File.basename(file)}", content_type: 'text/plain')
+			metadata = @driveservice.create_file(file_metadata, fields: 'id', upload_source: "#{file}", content_type: 'text/plain')
   end
 end
